@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> 회원가입 페이지 </title>
+
+    <script>
+        function register() {
+            let user_id = $("#user_id").val();
+            let nick_name = $("#nick_name").val();
+            let password1 = $("#password1").val();
+            let password2 = $("#password2").val();
+
+            let register_data = new FormData();
+
+            register_data.append("user_id", user_id);
+            register_data.append("nick_name", nick_name);
+            register_data.append("password1", password1);
+            register_data.append("password2", password2);
+
+            fetch('/register', {
+                method: "POST",
+                body: register_data
+            }).then((res) => res.json()).then((data) => {
+
+            })
+        }
+    </script>
+</head>
+
+<body>
+    {% if message %}
+    <script>
+        alert("{{message}}")
+    </script> {% endif %}
+    <form method="POST" action="/register">
+        <input id="user_id" type="text" placeholder="아이디" name="user_id" />
+        <input id="nick_name" type="text" placeholder="닉네임" name="nick_name" />
+        <input id="password1" type="password" placeholder="비밀번호" name="password1" />
+        <input id="password2" type="password" placeholder="비밀번호 확인" name="password2" />
+        <button onclick="register()" type="submit"> 가입하기 </button>
+    </form>
+</body>
+
+</html>
