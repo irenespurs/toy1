@@ -2,11 +2,11 @@ from flask import Flask, render_template, request, jsonify, session, redirect, u
 from pymongo import MongoClient
 from bson.json_util import dumps
 from bson.objectid import ObjectId
-import re
 
 # 비밀번호 암호화에 이용되는 패키지
 import jwt, datetime, hashlib
 
+SECRET_KEY='WETUBE'
 
 app = Flask(__name__)
 client = MongoClient('mongodb+srv://chunws:test@chunws.w8zkw9b.mongodb.net/?retryWrites=true&w=majority')
@@ -20,6 +20,34 @@ def home():
 def login():
     if request.method == "GET":
         return render_template('login.html')
+    
+    elif request.method == "POST":
+        user_id = request.form['user_id']
+        password = request.form['password']
+        
+        # 비밀번호 암호화
+        pw_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
+        
+        # 아이디와 비밀번호로 유저 찾기
+        result_user = db.wetube_user.find_one({"user_id" : user_id, "password" : pw_hash})
+ 
+        # 등록된 유저가 맞는 경우, find_one 함수로 인해 아이디 / 비밀번호 일치 여부 모두 확인됨
+        if result_user is not None:
+            # payload : 유저 정보와 만료 시간을 담고 있는 정보 
+            # 시크릿키 : payload 값을 알기 위한 키
+            # JWt = payload + 시크릿키 ?
+            payload = {
+                'id' : user_id,
+                # 만료 시간, UTC 기준 로그인한 시간 + 500초간 유효함
+                'exp' : datetime.datetime.utcnow() + datetime.timedelta(seconds=500)
+            }
+            
+            token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+            print('여기까지옴')
+            return render_template('/index.html', token = token, user_id = user_id)
+        # 등록된 유저가 아닌 경우
+        else:
+            return render_template('login.html', message = "아이디 / 비밀번호를 확인하세요")
     
 @app.route('/register', methods=["POST", "GET"])
 def register():
@@ -56,8 +84,8 @@ def register():
             
             db.wetube_user.insert_one(create_user)
             msg = "회원가입 성공!"
-        
-            return render_template('/login.html', message=msg)
+            
+            return redirect(url_for('/login.html', message=msg))
     
     # GET 요청시 회원가입 페이지로 유도
     else:

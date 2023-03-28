@@ -12,11 +12,14 @@
     {% if message %}
     <script>
         alert("{{message}}")
-    </script> {% endif %}
-    <form>
-        <input type="text" placeholder="아이디">
-        <input type="text" placeholder="비밀번호">
-        <button onclick="login()" type="submit"> 로그인 </button>
+    </script>
+    {% endif %}
+
+    <!-- 랜딩 오류나서 js 방식으로 구현해야 할듯 -->
+    <form method="POST" action="/login">
+        <input type="text" placeholder="아이디" name ="user_id">
+        <input type="password" placeholder="비밀번호" name = "password">
+        <button type="submit"> 로그인 </button>
     </form>
 </body>
 
