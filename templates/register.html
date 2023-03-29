@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> 회원가입 페이지 </title>
+    <!-- JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+</head>
+
+<body>
+    {% if message %}
+    <script>
+        alert("{{message}}")
+    </script> {% endif %}
+    <form method="POST" action="/register">
+        <input id="user_id" type="text" placeholder="아이디" name="user_id" />
+        <input id="nick_name" type="text" placeholder="닉네임" name="nick_name" />
+        <input id="password1" type="password" placeholder="비밀번호" name="password1" />
+        <input id="password2" type="password" placeholder="비밀번호 확인" name="password2" />
+        <button type="submit"> 가입하기 </button>
+    </form>
+</body>
+
+</html>
