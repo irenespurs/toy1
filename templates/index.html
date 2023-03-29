@@ -7,15 +7,225 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>대문</title>
 
+    <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+    crossorigin="anonymous"
+    />
+
+    <link
+    href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap"
+    rel="stylesheet"
+    />
+
     <!-- JS 쿠키 토큰 넣을때 필요함-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"
+    ></script>
+
+    <style>
+        * {
+          font-family: "Gowun Dodum", sans-serif;
+      }
+  
+      .mytitle {
+          width: 100%;
+          height: 250px;
+  
+          background-image: linear-gradient(
+              0deg,
+              rgba(0, 0, 0, 0.5),
+              rgba(0, 0, 0, 0.5)
+          ),
+          url("https://movie-phinf.pstatic.net/20210715_95/1626338192428gTnJl_JPEG/movie_image.jpg");
+          background-position: center;
+          background-size: cover;
+  
+          color: white;
+  
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+      }
+  
+      .mytitle > button {
+          width: 200px;
+          height: 50px;
+  
+          background-color: transparent;
+          color: white;
+  
+          border-radius: 50px;
+          border: 1px solid white;
+  
+          margin-top: 10px;
+      }
+  
+      .mytitle > button:hover {
+          border: 2px solid white;
+      }
+  
+      .mycomment {
+          color: gray;
+      }
+  
+      .mycards {
+          margin: 20px auto 0px auto;
+          width: 95%;
+          max-width: 1200px;
+      }
+  
+      .mypost {
+          width: 95%;
+          max-width: 500px;
+          margin: 20px auto 0px auto;
+          padding: 20px;
+          box-shadow: 0px 0px 3px 0px gray;
+  
+          display: none;
+      }
+  
+      .mybtns {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: center;
+  
+          margin-top: 20px;
+      }
+      .mybtns > button {
+          margin-right: 10px;
+      }
+    </style>
+    
     <script>
-        function logout(){
+
+    $(document).ready(function () {
+        listing();
+        $('#save_btn').hide();
+    });
+
+    function logout(){
             $.removeCookie('token');
             alert('로그아웃 되었습니다.')
             window.location.href = '/'
         }
+
+    function listing() {
+        fetch("/movie")
+        .then((res) => res.json())
+        .then((data) => {
+            console.log(data);
+            let rows = data["result"];
+
+            $("#cards-box").empty();
+
+            rows.forEach((a) => {
+            let comment = a["comment"];
+            let title = a["title"];
+            let desc = a["desc"];
+            let image = a["image"];
+            let star = a["star"];
+
+            let star_repeat = "⭐".repeat(star);
+
+            let temp_html = `<div class="col">
+                                        <div class="card h-100">
+                                            <img src="${image}"
+                                                class="card-img-top">
+                                            <div class="card-body">
+                                                <h5 class="card-title">${title}</h5>
+                                                <p class="card-text">${desc}</p>
+                                                <p>${star_repeat}</p>
+                                                <p class="mycomment">${comment}</p>
+                                                <button type="button" onclick="update_btn('${title}', '${image}', '${comment}', '${star}')">수정</button>
+                                                <button type="button" onclick="delete_btn('${title}')">삭제</button>
+                                            </div>
+                                        </div>
+                                    </div>`;
+
+            $("#cards-box").append(temp_html);
+            });
+        });
+    }
+
+      // 글 쓰기
+    function posting() {
+        let url = $("#url").val();
+        let comment = $("#comment").val();
+        let star = $("#star").val();
+
+        let formData = new FormData();
+        formData.append("url_give", url);
+        formData.append("comment_give", comment);
+        formData.append("star_give", star);
+
+        fetch("/movie", { method: "POST", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+            alert(data["msg"]);
+            window.location.reload();
+        });
+    }
+
+// 수정하기
+function update_btn(title, image, comment, star) {
+    $("#post-box").show();
+    $('#save_btn').show();
+    $('#post_btn').hide();
+
+    window.scrollTo(0, 0);
+
+    $("#title").val(title);
+    $("#url").val(image);
+    $("#comment").val(comment);
+    $("#star").val(star);
+}
+
+function save() {
+    let url = $("#url").val();
+    let comment = $("#comment").val();
+    let star = $("#star").val();
+
+    let formData = new FormData();
+    formData.append("comment_give", comment);
+    formData.append("star_give", star);
+
+    fetch("/movie/update", { method: "PUT", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+            alert(data["msg"]);
+            window.location.reload();
+        });
+}
+
+      // 삭제하기
+    function delete_btn(title) {
+        let formData = new FormData();
+        formData.append("title_give", title);
+
+        fetch("/movie/delete", { method: "DELETE", body: formData })
+        .then((res) => res.json())
+        .then((data) => {
+            alert(data["msg"]);
+            window.location.reload();
+        });
+    }
+
+    function open_box() {
+        $("#post-box").show();
+    }
+    function close_box() {
+        $("#post-box").hide();
+    }
     </script>
 </head>
 
@@ -34,6 +244,118 @@
     <a href="/register"> 회원 가입 </a>
     {% endif %}
     {{token}} {{user_id}}
+
+
+
+    <div class="mytitle">
+    <h1>내 생애 최고의 영화들</h1>
+    <button onclick="open_box()">영화 기록하기</button>
+    </div>
+    <div class="mypost" id="post-box">
+    <div class="form-floating mb-3">
+        <input
+        id="url"
+        type="email"
+        class="form-control"
+        placeholder="name@example.com"
+        />
+        <label>영화URL</label>
+    </div>
+
+    <div class="input-group mb-3">
+        <label class="input-group-text" for="inputGroupSelect01">별점</label>
+        <select class="form-select" id="star">
+        <option selected>-- 선택하기 --</option>
+        <option value="1">⭐</option>
+        <option value="2">⭐⭐</option>
+        <option value="3">⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐</option>
+        <option value="5">⭐⭐⭐⭐⭐</option>
+        </select>
+    </div>
+
+    <div class="form-floating">
+        <textarea
+        id="comment"
+        class="form-control"
+        placeholder="Leave a comment here"
+        ></textarea>
+        <label for="floatingTextarea2">코멘트</label>
+    </div>
+    <div class="mybtns">
+        <button id="post_btn" onclick="posting()" type="button" class="btn btn-dark">기록하기</button>
+        <button id="save_btn" onclick="save()" type="button" class="btn btn-dark">저장</button>
+        <button
+        onclick="close_box()"
+        type="button"
+        class="btn btn-outline-dark"
+        >
+        닫기
+        </button>
+    </div>
+    </div>
+    <div class="mycards">
+    <div class="row row-cols-1 row-cols-md-4 g-4" id="cards-box">
+        <div class="col">
+        <div class="card h-100">
+            <img
+            src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+            class="card-img-top"
+            />
+            <div class="card-body">
+            <h5 class="card-title">영화 제목이 들어갑니다</h5>
+            <p class="card-text">여기에 영화에 대한 설명이 들어갑니다.</p>
+            <p>⭐⭐⭐</p>
+            <p class="mycomment">나의 한줄 평을 씁니다</p>
+            <button type="button" onclick="update_btn()">수정</button>
+            <button type="button" onclick="delete_btn()">삭제</button>
+            </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="card h-100">
+            <img
+            src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+            class="card-img-top"
+            />
+            <div class="card-body">
+            <h5 class="card-title">영화 제목이 들어갑니다</h5>
+            <p class="card-text">여기에 영화에 대한 설명이 들어갑니다.</p>
+            <p>⭐⭐⭐</p>
+            <p class="mycomment">나의 한줄 평을 씁니다</p>
+            </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="card h-100">
+            <img
+            src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+            class="card-img-top"
+            />
+            <div class="card-body">
+            <h5 class="card-title">영화 제목이 들어갑니다</h5>
+            <p class="card-text">여기에 영화에 대한 설명이 들어갑니다.</p>
+            <p>⭐⭐⭐</p>
+            <p class="mycomment">나의 한줄 평을 씁니다</p>
+            </div>
+        </div>
+        </div>
+        <div class="col">
+        <div class="card h-100">
+            <img
+            src="https://movie-phinf.pstatic.net/20210728_221/1627440327667GyoYj_JPEG/movie_image.jpg"
+            class="card-img-top"
+            />
+            <div class="card-body">
+            <h5 class="card-title">영화 제목이 들어갑니다</h5>
+            <p class="card-text">여기에 영화에 대한 설명이 들어갑니다.</p>
+            <p>⭐⭐⭐</p>
+            <p class="mycomment">나의 한줄 평을 씁니다</p>
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
 </body>
 
 </html>
